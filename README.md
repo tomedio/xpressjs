@@ -343,7 +343,7 @@ Having token in a `token` variable you can use the code below:
 ```javascript
 const { jwt } = require('xpressjs')
 
-jwtverifyAccessToken(token)
+jwt.verifyAccessToken(token)
   .then((content) => {
     console.log(content.payload) // here is access to the payload set in the token
   })
@@ -354,13 +354,13 @@ jwtverifyAccessToken(token)
 
 #### Token verification as ExpressJS middleware
 
-For simplification XpressJS provides ready-to-use middleware for ExpressJS. This middleware is created by function `accessAuthentication(options)`.
+For simplification XpressJS provides ready-to-use middleware for ExpressJS. This middleware is created by function `authenticate(options)`.
 You can just add a code like below in the main file:
 
 ```javascript
 const { jwt } = require('xpressjs')
 
-app.use(accessAuthentication())
+app.use(jwt.authenticate())
 ```
 
 Then all endpoints will be protected by JWT verification. Additionally, in every protected controller you can get access to payload
@@ -378,7 +378,7 @@ It's just enough to add this code in the main file:
 
 ```javascript
 app.use(
-  accessAuthentication({
+  jwt.authenticate({
     whitelist: [{ method: 'GET', path: /\/docs\/?.*/ }]
   })
 )

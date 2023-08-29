@@ -50,7 +50,7 @@ module.exports = {
    * @param {JwtAuthenticateOptions} options
    * @returns {function}
    */
-  jwtAuthenticate: function (options) {
+  authenticate: function (options) {
     return function (req, res, next) {
       const whitelist = options?.whitelist ?? []
       const whitelistedRequest = whitelist.find(
