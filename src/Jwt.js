@@ -38,7 +38,7 @@ module.exports = {
   /**
    * @typedef {Object} WhitelistItem
    * @property {string} method - HTTP method
-   * @property {string} path - Whitelisted path
+   * @property {string|RegExp} path - Whitelisted path
    */
 
   /**

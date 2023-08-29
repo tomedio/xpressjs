@@ -1,5 +1,5 @@
 module.exports = {
-  getFilters: function (rawFilters, definition) {
+  get: function (rawFilters, definition) {
     const parsedFilters = {}
     const filterNames = Object.keys(definition)
     if (filterNames.length === 0) {

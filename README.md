@@ -422,7 +422,7 @@ const token = crypto.generateToken(15)
 ## Handling and parsing filters
 
 XpressJS can help with handling query parameters. It offers to take only defined parameters and to parse them if needed.
-The library has `getFilters(rawFilters, definition)` method which takes two parameters:
+The library has `filters.get(rawFilters, definition)` method which takes two parameters:
 
 - `rawFilters` - it is an object having all available query parameters, in ExpressJS it's usually `req.query`;
 - `definition` - it is an object with definitions of all parameters available in the application.
@@ -439,7 +439,7 @@ Example usage of this method is shown below:
 ```javascript
 const { filters } = require('xpressjs')
 
-const parsedFilters = filters.getFilters(req.query, {
+const parsedFilters = filters.get(req.query, {
   // comma-separated category identifiers
   categories: {
     default: [],
