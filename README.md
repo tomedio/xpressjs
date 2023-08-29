@@ -8,39 +8,31 @@ XpressJS is a set of tools helpful with creating NodeJS applications based on [E
 - [EnvFile](https://www.npmjs.com/package/envfile)
 - [Zod](https://zod.dev/)
 
-# Table of content
-[XpressJS](#xpressjs)
+## Installation
+To add XpressJS library to your project, just use a command specified for your package manager:
+* npm:
+```shell
+npm i tomedio/xpressjs
+```
+* yarn:
+```shell
+yarn add tomedio/xpressjs
+```
+
+# Features
   * [Parsing JSON body](#parsing-json-body)
-    + [Access to raw body](#access-to-raw-body)
   * [Prisma Client provider](#prisma-client-provider)
   * [Getting items list from database](#getting-items-list-from-database)
   * [Logging](#logging)
   * [Error handling](#error-handling)
-    + [Reporting an error](#reporting-an-error)
-    + [Handle errors](#handle-errors)
-    + [Report not existing endpoint](#report-not-existing-endpoint)
-    + [Default messages for statuses](#default-messages-for-statuses)
   * [Success responses](#success-responses)
-    + [Return a success message](#return-a-success-message)
-    + [Return list result](#return-list-result)
   * [Secure endpoints by JWT](#secure-endpoints-by-jwt)
-    + [Set up token secret](#set-up-token-secret)
-    + [Generate JWT token](#generate-jwt-token)
-    + [Verify request](#verify-request)
-      - [Token verification as ExpressJS middleware](#token-verification-as-expressjs-middleware)
-        * [Endpoints whitelist](#endpoints-whitelist)
   * [Cryptography](#cryptography)
-    + [Hash a plain password](#hash-a-plain-password)
-    + [Generate random token](#generate-random-token)
   * [Handling and parsing filters](#handling-and-parsing-filters)
   * [.env modification](#env-modification)
-    + [Add or modify environment variable](#add-or-modify-environment-variable)
-    + [Remove existing variable from a file](#remove-existing-variable-from-a-file)
   * [Request validation](#request-validation)
-    + [Query parameters validator](#query-parameters-validator)
-    + [Request body validator](#request-body-validator)
-    + [Handling requests with invalid data](#handling-requests-with-invalid-data)
   * [Environment validation](#environment-validation)
+
 
 ## Parsing JSON body
 
@@ -673,7 +665,9 @@ Usually ExpressJS application uses some environment variables. They must be defi
 
 To prevent an application even to run without required variables, XpressJS comes with environment validator. It's a method `checkRequiredVars(requiredVariables)`. It takes one argument which is an array of required variable names. Function return a Promise. You can catch an error and decide what you want to do, eg. exit the application with logs.
 
-Usually handling success of returned promise is useless. It doesn't include any needed information. Interesting is what is handled by `catch`. Passed function can take one argument which is an object having two properties:
+In `then` part you can handle correct situation if all required variables are available. You can then start ExpressJS server. This handler does not take any arguments.
+
+Situation, if any required variable is not available, will be handled by `catch`. Passed function can take one argument which is an object having two properties:
 * `message` - already prepared error message; it is: `Required environment variables: ${notAvailableVariables} are not available` where `notAvailableVariables` is a variable with all non-available env variable names, separated by `,` comma sign;
 * `variables` - an array of lacking required environment variable names.
 
@@ -686,10 +680,18 @@ require('dotenv').config()
 
 const { env, logger } = require('xpressjs')
 
+// other parts of main file, including `app` constant initialization
+
 env.validator.checkRequiredVars([
   'JWT_SECRET_TOKEN',
   'EXTERNAL_API_TOKEN'
-]).catch(error => {
+])
+.then(() => {
+  app.listen(3000, () => {
+    logger.getLogger().info('Server is listening on port 3000')
+  }
+})
+.catch(error => {
   // log information about not available variables
   logger.getLogger().error(error.message)
   // exit the application to prevent issues related to lacking variables
