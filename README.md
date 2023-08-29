@@ -8,7 +8,8 @@ XpressJS is a set of tools helpful with creating NodeJS applications based on [E
 - [EnvFile](https://www.npmjs.com/package/envfile)
 - [Zod](https://zod.dev/)
 
-- [XpressJS](#xpressjs)
+# Table of content
+[XpressJS](#xpressjs)
   * [Parsing JSON body](#parsing-json-body)
     + [Access to raw body](#access-to-raw-body)
   * [Prisma Client provider](#prisma-client-provider)
