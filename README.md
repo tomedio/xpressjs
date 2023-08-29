@@ -235,7 +235,10 @@ const { handleNotFound } = require('xpressjs')
 router.use(handleNotFound())
 ```
 
-`handleNotFound` method can take one argument which is a message for the situation when requested endpoint is not found. If you don't provide it, default message for HTTP 404 will be used.
+`handleNotFound` method can take one argument which is a message for the situation when requested endpoint is not found. If you don't provide it, default message for HTTP 404 will be used, eg.:
+```javascript
+router.use(handleNotFound('API endpoint not found'))
+```
 
 ### Default messages for statuses
 

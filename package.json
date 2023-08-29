@@ -1,7 +1,7 @@
 {
   "name": "xpressjs",
   "author": "Tomasz Bajorek <tomasz.bajorek@tomedio.com>",
-  "version": "1.0.3",
+  "version": "1.0.4",
   "description": "XpressJS is a set of tools helpful with creating NodeJS applications based on ExpressJS library.",
   "main": "index.js",
   "scripts": {
