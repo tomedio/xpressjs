@@ -374,7 +374,7 @@ For security purposes it is a good practice to protect all endpoints as default.
 
 You can use options of middleware creator. It has a `whitelist` property. you can put therer an array of whitelisted endpoints. Every endpoint is described by two properties:
 
-- `method` - HTTP method;
+- `method` - HTTP method, if not given, then all methods will be allowed;
 - `path` - whitelisted path; it can be both string and regular expression.
 
 It's just enough to add this code in the main file:

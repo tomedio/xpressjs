@@ -55,7 +55,7 @@ module.exports = {
       const whitelist = options?.whitelist ?? []
       const whitelistedRequest = whitelist.find(
         (entry) =>
-          entry.method.toLowerCase() === req.method.toLowerCase() &&
+          (typeof entry.method === 'undefined' || entry.method.toLowerCase() === req.method.toLowerCase()) &&
           (typeof entry.path === 'object' ? req.url.match(entry.path) : entry.path === req.url)
       )
       if (whitelistedRequest) {
