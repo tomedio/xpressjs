@@ -9,30 +9,36 @@ XpressJS is a set of tools helpful with creating NodeJS applications based on [E
 - [Zod](https://zod.dev/)
 
 ## Installation
+
 To add XpressJS library to your project, just use a command specified for your package manager:
-* npm:
+
+- npm:
+
 ```shell
 npm i tomedio/xpressjs
 ```
-* yarn:
+
+- yarn:
+
 ```shell
 yarn add tomedio/xpressjs
 ```
 
 # Features
-  * [Parsing JSON body](#parsing-json-body)
-  * [Prisma Client provider](#prisma-client-provider)
-  * [Getting items list from database](#getting-items-list-from-database)
-  * [Logging](#logging)
-  * [Error handling](#error-handling)
-  * [Success responses](#success-responses)
-  * [Secure endpoints by JWT](#secure-endpoints-by-jwt)
-  * [Cryptography](#cryptography)
-  * [Handling and parsing filters](#handling-and-parsing-filters)
-  * [.env modification](#env-modification)
-  * [Request validation](#request-validation)
-  * [Environment validation](#environment-validation)
 
+- [Parsing JSON body](#parsing-json-body)
+- [Prisma Client provider](#prisma-client-provider)
+- [Getting items list from database](#getting-items-list-from-database)
+- [Logging](#logging)
+- [Error handling](#error-handling)
+- [Success responses](#success-responses)
+- [Secure endpoints by JWT](#secure-endpoints-by-jwt)
+- [Cryptography](#cryptography)
+- [Handling and parsing filters](#handling-and-parsing-filters)
+- [.env modification](#env-modification)
+- [Request validation](#request-validation)
+- [Environment validation](#environment-validation)
+- [Synchronous async operations](#synchronous-async-operations)
 
 ## Parsing JSON body
 
@@ -236,6 +242,7 @@ router.use(handleNotFound())
 ```
 
 `handleNotFound` method can take one argument which is a message for the situation when requested endpoint is not found. If you don't provide it, default message for HTTP 404 will be used, eg.:
+
 ```javascript
 router.use(handleNotFound('API endpoint not found'))
 ```
@@ -261,7 +268,7 @@ XpressJS can help with success responses. There are two common situation when it
 
 ### Return a success message
 
-Success message can be returned in the same way as error. It contains fields `status` and `message`.
+Success message can be returned in the same way as error. It contains fields `status`, `message` and optional one: `object`.
 
 Most common usage is to return a success message in a controller. It can be implemented as shown below.
 
@@ -271,6 +278,48 @@ function register(req, res, next) {
   registerNewUser(email, password, name, surname) /// this is a model to register a new user
     .then(() => next(createSuccess(201, 'User is created successfully')))
     .catch((error) => next(error))
+}
+```
+Code above will make response as below:
+```json
+{
+  "status": 201,
+  "message": "User is created successfully"
+}
+```
+
+#### Return related object
+Sometimes you may need to return object related to the request, e.g. for new user frontend may need identifier created on the backend side.
+
+Below is the same code but additionally object of new user is returned.
+```javascript
+function register(req, res, next) {
+  const { email, password, name, surname } = req.body
+  registerNewUser(email, password, name, surname) /// this is a model to register a new user
+    .then((user) => next(createSuccess(201, 'User is created successfully', user)))
+    .catch((error) => next(error))
+}
+```
+Assuming this request body:
+```json
+{
+  "email": "mail@example.com",
+  "password": "8A02XWTv0qHBDEz",
+  "name": "John",
+  "surname": "Smith"
+}
+```
+code above will make response as below:
+```json
+{
+  "status": 201,
+  "message": "User is created successfully",
+  "object": {
+    "id": 43,
+    "email": "mail@example.com",
+    "name": "John",
+    "surname": "Smith"
+  }
 }
 ```
 
@@ -346,7 +395,8 @@ Having token in a `token` variable you can use the code below:
 ```javascript
 const { jwt } = require('xpressjs')
 
-jwt.verifyAccessToken(token)
+jwt
+  .verifyAccessToken(token)
   .then((content) => {
     console.log(content.payload) // here is access to the payload set in the token
   })
@@ -664,6 +714,7 @@ app.post('/users', validator.validateBody(expectedQuery, errorHandler), (req, re
 This example defines a schema and error handler. Later validator uses them and in a case if request has invalid data, such fact is logged and passed to next handlers, eg. middleware from XpressJS which return it to a requester.
 
 ## Environment validation
+
 Usually ExpressJS application uses some environment variables. They must be defined before running the application and inside are available as properties of `process.env` object. It may happen that for some reason not all required environment variables are available in the application. It may cause issues, eg. not authorized internal requests to other services when authentication keys are stored in env variables.
 
 To prevent an application even to run without required variables, XpressJS comes with environment validator. It's a method `checkRequiredVars(requiredVariables)`. It takes one argument which is an array of required variable names. Function return a Promise. You can catch an error and decide what you want to do, eg. exit the application with logs.
@@ -671,12 +722,14 @@ To prevent an application even to run without required variables, XpressJS comes
 In `then` part you can handle correct situation if all required variables are available. You can then start ExpressJS server. This handler does not take any arguments.
 
 Situation, if any required variable is not available, will be handled by `catch`. Passed function can take one argument which is an object having two properties:
-* `message` - already prepared error message; it is: `Required environment variables: ${notAvailableVariables} are not available` where `notAvailableVariables` is a variable with all non-available env variable names, separated by `,` comma sign;
-* `variables` - an array of lacking required environment variable names.
+
+- `message` - already prepared error message; it is: `Required environment variables: ${notAvailableVariables} are not available` where `notAvailableVariables` is a variable with all non-available env variable names, separated by `,` comma sign;
+- `variables` - an array of lacking required environment variable names.
 
 **Watch-out!** Your application must read environment variables before they are validated. You can use [dotenv](https://www.npmjs.com/package/dotenv) package for this purpose.
 
 Example code below shows how to prevent an application to run if not all required environment variables are available.
+
 ```javascript
 // import environment variables to the application at start
 require('dotenv').config()
@@ -692,7 +745,7 @@ env.validator.checkRequiredVars([
 .then(() => {
   app.listen(3000, () => {
     logger.getLogger().info('Server is listening on port 3000')
-  }
+  })
 })
 .catch(error => {
   // log information about not available variables
@@ -701,4 +754,33 @@ env.validator.checkRequiredVars([
   process.exit(1)
 })
 ```
+
 This example requires `dotenv` package to be installed.
+
+## Synchronous async operations
+
+Asynchronous operations are very common in NodeJS applications. Standard way to handle both success and error is a `then/catch` construction, similar to `try/catch` from non-promised approach. However sometimes you need only to handle result or error and do something with it.
+
+XpressJS comes with simple method to handle asynchronous promises in a more synchronous way. It is offered by `sync()` function which takes Promise object and return object with two properties:
+* `error` - error object if reported, otherwise `null` value;
+* `result` - result of a promise if everything happened correctly, otherwise `null` value.
+
+`sync()` function handles both cases: success and error. It allows to have the same code for both situations.
+
+Below is an example of how to use `sync()` function. The code contains `getContent` function which handles errors and logs them. If everything is correct, it returns response data.
+```javascript
+const axios = require('axios')
+const { sync } = require('xpressjs')
+
+/**
+ * @param {string} url
+ * @returns {Promise<?string>}
+ */
+async function getContent(url) {
+    const {error, result} = await sync(axios.get(url))
+    if (error) {
+        console.log(`Error occured while fetching content: ${error.message}`)
+    }
+    return result.data
+}
+```

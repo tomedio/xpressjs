@@ -3,7 +3,7 @@ module.exports = {
   db: require('./src/DatabaseClient'),
   env: {
     modifier: require('./src/env/Modifier'),
-    validator: require('./src/env/Validator'),
+    validator: require('./src/env/Validator')
   },
   filters: require('./src/Filters'),
   http: {
@@ -16,6 +16,7 @@ module.exports = {
   logger: require('./src/Logger'),
   handleNotFound: require('./src/NotFound'),
   statusHandler: require('./src/StatusHandler'),
-  jsonBody: require('./src/jsonBody'),
-  validator: require('./src/Validator')
+  jsonBody: require('./src/JsonBody'),
+  validator: require('./src/Validator'),
+  sync: require('./src/Sync')
 }
