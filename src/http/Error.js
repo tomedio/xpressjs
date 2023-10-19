@@ -1,12 +1,12 @@
 const { getMessage } = require('./Messages')
-const Logger = require('../Logger')
+const {logger} = require('../Logger')
 
 module.exports = {
   createError: function (status, errorMessage = null, cause = null) {
     const message = errorMessage ?? getMessage(status) ?? 'An error occurred'
-    Logger.getLogger().error('HTTP ' + status + ': ' + message)
+    logger.error('HTTP ' + status + ': ' + message)
     if (cause) {
-      Logger.getLogger().error(cause)
+      logger.error(cause)
     }
     return {
       status,
