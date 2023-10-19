@@ -1,7 +1,7 @@
 {
   "name": "xpressjs",
   "author": "Tomasz Bajorek <tomasz.bajorek@tomedio.com> (https://tomedio.com/)",
-  "version": "1.0.7",
+  "version": "1.0.8",
   "engines": {
     "node": ">=15.0.0"
   },
