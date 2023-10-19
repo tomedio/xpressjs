@@ -13,10 +13,10 @@ module.exports = {
   },
   jwt: require('./src/Jwt'),
   list: require('./src/ListGetter'),
-  logger: require('./src/Logger'),
   handleNotFound: require('./src/NotFound'),
   statusHandler: require('./src/StatusHandler'),
   jsonBody: require('./src/JsonBody'),
   validator: require('./src/Validator'),
-  sync: require('./src/Sync')
+  sync: require('./src/Sync'),
+  ...require('./src/Logger')
 }

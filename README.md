@@ -148,17 +148,25 @@ In the example above we assume we have `Post` and `User` models. Post has catego
 
 You can use any logging solution you want. However, it's not easy to replace all places where logs are used if you would like to change used library.
 
-XpressJS offers you a global logger which can be configured one time and then can be used in all places where it's needed.
+XpressJS offers you a global logger which can be configured one time and then can be used in all places where it's needed. You can configure even more than one logger.
 
-At start of your application configure logger. Without any configuration, native `console` logger will be used.
+At start of your application, you can configure logger. Without any configuration, native `console` logger will be used.
+
+XpressJS logger (with logger id: `0`) is used in other XpressJS components.
+
+### Configure a logger
+
+Loggers are available under `loggers` property imported from Xpress. To configure a logger use `configureLogger()` method. It takes two arguments:
+* configurator method - required parameter which is a function returning configured logger object;
+* logger identifier - optional parameter being an identifier used to determine in the application, which configured logger should be used; if not given, `0` value will be passed as default.
 
 Example configuration for Winston logger:
 
 ```javascript
 const winston = require('winston')
-const { logger } = require('xpressjs')
+const { loggers } = require('xpressjs')
 
-logger.configureLogger(() =>
+loggers.configureLogger(() =>
   winston.createLogger({
     level: 'info',
     format: winston.format.json(),
@@ -171,7 +179,34 @@ logger.configureLogger(() =>
 )
 ```
 
-XpressJS logger is used in other XpressJS components.
+### Access to loggers
+
+You can get configured loggers using `getLogger()` method from `loggers` property imported from XpressJS. It takes one optional argument which is identifier of configured logger. If not given, `0` value is taken as default.
+
+Example code with getting loggers:
+```javascript
+const { loggers } = require('xpressjs')
+
+const fileLogger = loggers.getLogger('file')
+fileLogger.info('This is info log logged with file logger configured in an application')
+
+
+const consoleLogger = loggers.getLogger('console')
+consoleLogger.info('This is info log logged with console logger configured in an application')
+```
+
+### Access to default logger
+If you configured a default logger by giving no logger id parameter to `configureLogger()` method, you can get default logger in a way described in the chapter above:
+```javascript
+const { loggers } = require('xpressjs')
+const logger = loggers.getLogger()
+```
+
+However, XpressJS provides even simpler way to get default logger. It's just enough to import and use `logger` property as it's shown below:
+```javascript
+const { logger } = require('xpressjs')
+loger.info('This is info log logged with default logger')
+```
 
 ## Error handling
 

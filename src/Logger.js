@@ -11,8 +11,15 @@ const Logger = (function () {
 
     configureLogger: function (configureFn, loggerId = 0) {
       logger[loggerId] = configureFn()
+    },
+
+    get logger() {
+      return this.getLogger()
     }
   }
 })()
 
-module.exports = Logger
+module.exports = {
+  loggers: Logger,
+  logger: Logger.logger
+}
