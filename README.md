@@ -39,6 +39,7 @@ yarn add tomedio/xpressjs
 - [Request validation](#request-validation)
 - [Environment validation](#environment-validation)
 - [Synchronous async operations](#synchronous-async-operations)
+- [Health check](#health-check)
 
 ## Parsing JSON body
 
@@ -819,3 +820,84 @@ async function getContent(url) {
     return result.data
 }
 ```
+
+## Health check
+It is a good practice to prepare an endpoint to verify availability of the whole API. XpressJS offers a very simple way to implement basic health check controller under `GET /` path.
+
+To add health check controller you just need to import `useHealthCheck` function from XpressJS and execute it in your main file. An example of basic setup is below:
+```javascript
+const express = require('express')
+const { healthcheck } = require('xpressjs')
+
+const app = express()
+useHealthCheck(app)
+```
+Code above health check endpoint of the application. This endpoint is available under the path: `GET /` and returns result with `application/json` type. Result looks like this:
+```json
+{
+  "app": {
+    "name": "your-app-name",
+    "version": "1.2.3"
+  },
+  "date": "2023-11-10T18:35:21.145Z",
+  "result": "success"
+}
+```
+Fields mean:
+* `app.name` - application name taken from `name` field in `package.json` file;
+* `app.version` - application version taken from `version` field in `package.json` file;
+* `date` - date and time of calling the endpoint;
+* `result` - constant `success` string, always the same.
+
+### Customize health check controller
+You may want to do additional checks when health check controller is called. You can do it just by passing second argument to `useHealthCheck` function. If you pass a value there, it must be a function taking three arguments like every Express controller: `req`, `res` and `next`. You don't need to use these parameters.
+
+Callback function should return nothing or an object. If object is returned, it will be merged with default health check result and returned as a response.
+
+Below is an example of custom callback which checks availability of additional services.
+```javascript
+const express = require('express')
+const { healthcheck } = require('xpressjs')
+
+const app = express()
+
+function healthCheckCallback(req, res, next) {
+    return {
+        availability: {
+            db: true,
+            cdn: true,
+            sap: false
+        }
+    }
+}
+
+useHealthCheck(app, healthCheckCallback)
+```
+
+When you call `GET /` endpoint, you get result like this:
+```json
+{
+  "app": {
+    "name": "your-app-name",
+    "version": "1.2.3"
+  },
+  "date": "2023-11-10T18:35:21.145Z",
+  "result": "success",
+  "availability": {
+    "db": true,
+    "cdn": true,
+    "sap": false
+  }
+}
+```
+
+### Health check controller
+You may want to implement health check endpoint in a different way than proposed by XpressJS library. Besides ready-to-use solution it provides to you a simple controller which you can just connect to any path you need. To use it you need to import `healthcheck.controller` like it's shown below.
+```javascript
+const express = require('express')
+const { healthcheck } = require('xpressjs')
+
+const app = express()
+app.get('/healthcheck', healthcheck.controller)
+```
+It will make health check controller available under `GET /healthcheck` path.

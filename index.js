@@ -18,5 +18,6 @@ module.exports = {
   jsonBody: require('./src/JsonBody'),
   validator: require('./src/Validator'),
   sync: require('./src/Sync'),
+  healthcheck: require('./src/HealthCheck'),
   ...require('./src/Logger')
 }
