@@ -40,6 +40,7 @@ yarn add tomedio/xpressjs
 - [Environment validation](#environment-validation)
 - [Synchronous async operations](#synchronous-async-operations)
 - [Health check](#health-check)
+- [Sleep](#sleep)
 
 ## Parsing JSON body
 
@@ -824,13 +825,13 @@ async function getContent(url) {
 ## Health check
 It is a good practice to prepare an endpoint to verify availability of the whole API. XpressJS offers a very simple way to implement basic health check controller under `GET /` path.
 
-To add health check controller you just need to import `useHealthCheck` function from XpressJS and execute it in your main file. An example of basic setup is below:
+To add health check controller you just need to import `healthcheck` function from XpressJS and execute `healthcheck.useHealthCheck` in your main file. An example of basic setup is below:
 ```javascript
 const express = require('express')
 const { healthcheck } = require('xpressjs')
 
 const app = express()
-useHealthCheck(app)
+healthcheck.useHealthCheck(app)
 ```
 Code above health check endpoint of the application. This endpoint is available under the path: `GET /` and returns result with `application/json` type. Result looks like this:
 ```json
@@ -870,8 +871,7 @@ function healthCheckCallback(req, res, next) {
         }
     }
 }
-
-useHealthCheck(app, healthCheckCallback)
+healthcheck.useHealthCheck(app, healthCheckCallback)
 ```
 
 When you call `GET /` endpoint, you get result like this:
@@ -901,3 +901,19 @@ const app = express()
 app.get('/healthcheck', healthcheck.controller)
 ```
 It will make health check controller available under `GET /healthcheck` path.
+
+## Sleep
+XpressJS library offers a simple `sleep()` function to stop executing an application and wait for a concrete time before continuing. It can be used eg. to ensure that application will not fail because of rate limit of external APIs.
+
+`sleep` function takes one parameter which is number of milliseconds determining length of the break. An example code is shown below.
+```javascript
+const { sleep } = require('xpressjs')
+
+async function updateResources(resources) {
+    for (const resource of resources) {
+        await updateResource(resource)
+        await sleep(200)
+    }
+}
+```
+In the example `updateResources` function executes `updateResource` function for every passed resource. `updateResource` uses external API which permits to be called only 6 times per a second. `sleep` function will stop execution for 200ms after updating every resource to make sure that all requests will meet the rate limit.

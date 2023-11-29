@@ -19,5 +19,6 @@ module.exports = {
   validator: require('./src/Validator'),
   sync: require('./src/Sync'),
   healthcheck: require('./src/HealthCheck'),
+  sleep: require('./src/Sleep'),
   ...require('./src/Logger')
 }
