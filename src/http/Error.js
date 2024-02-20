@@ -1,5 +1,5 @@
 const { getMessage } = require('./Messages')
-const {logger} = require('../Logger')
+const { logger } = require('../Logger')
 
 module.exports = {
   createError: function (status, errorMessage = null, cause = null) {

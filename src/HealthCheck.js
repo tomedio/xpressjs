@@ -2,14 +2,14 @@ const path = require('path')
 const packageJson = require(path.join(process.cwd(), 'package.json'))
 
 function getHealthCheckResult() {
-    return {
-        app: {
-            name: packageJson.name,
-            version: packageJson.version,
-        },
-        date: new Date(),
-        result: 'success'
-    }
+  return {
+    app: {
+      name: packageJson.name,
+      version: packageJson.version
+    },
+    date: new Date(),
+    result: 'success'
+  }
 }
 
 /**
@@ -18,7 +18,7 @@ function getHealthCheckResult() {
  * @param res
  */
 function healthCheckController(req, res) {
-    res.json(getHealthCheckResult())
+  res.json(getHealthCheckResult())
 }
 
 /**
@@ -27,22 +27,22 @@ function healthCheckController(req, res) {
  * @param {function|null}callback
  */
 function useHealthCheck(app, callback = null) {
-    app.get('/', (req, res, next) => {
-        let result = {}
-        if (callback) {
-            const callbackResult = callback(req, res, next)
-            if (callbackResult && typeof callbackResult === 'object') {
-                result = callbackResult
-            }
-        }
-        res.json({
-            ...getHealthCheckResult(),
-            ...result
-        })
+  app.get('/', (req, res, next) => {
+    let result = {}
+    if (callback) {
+      const callbackResult = callback(req, res, next)
+      if (callbackResult && typeof callbackResult === 'object') {
+        result = callbackResult
+      }
+    }
+    res.json({
+      ...getHealthCheckResult(),
+      ...result
     })
+  })
 }
 
 module.exports = {
-    controller: healthCheckController,
-    useHealthCheck
+  controller: healthCheckController,
+  useHealthCheck
 }

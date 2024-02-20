@@ -20,5 +20,7 @@ module.exports = {
   sync: require('./src/Sync'),
   healthcheck: require('./src/HealthCheck'),
   sleep: require('./src/Sleep'),
-  ...require('./src/Logger')
+  delayed: require('./src/Delayed'),
+  context: require('./src/Context'),
+  logger: require('./src/logger')
 }

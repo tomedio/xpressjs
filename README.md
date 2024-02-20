@@ -7,6 +7,10 @@ XpressJS is a set of tools helpful with creating NodeJS applications based on [E
 - [JsonWebToken](https://www.npmjs.com/package/jsonwebtoken)
 - [EnvFile](https://www.npmjs.com/package/envfile)
 - [Zod](https://zod.dev/)
+- [Winston](https://zod.dev/)
+- [Express](https://zod.dev/)
+- [ExpressHttpContext](https://zod.dev/)
+- [uuid](https://zod.dev/)
 
 ## Installation
 
@@ -29,6 +33,7 @@ yarn add tomedio/xpressjs
 - [Parsing JSON body](#parsing-json-body)
 - [Prisma Client provider](#prisma-client-provider)
 - [Getting items list from database](#getting-items-list-from-database)
+- [Context](#context)
 - [Logging](#logging)
 - [Error handling](#error-handling)
 - [Success responses](#success-responses)
@@ -41,6 +46,7 @@ yarn add tomedio/xpressjs
 - [Synchronous async operations](#synchronous-async-operations)
 - [Health check](#health-check)
 - [Sleep](#sleep)
+- [Resolve Promises with delay](#resolve-promises-with-delay)
 
 ## Parsing JSON body
 
@@ -146,68 +152,150 @@ const posts = await list.getList(
 In the example above we assume we have `Post` and `User` models. Post has categoryId property. Post is related to users by a relation on `author` field.
 `post` constant contains object with fetched results.
 
+## Context
+
+Usually applications are context-less - all values must be passed explicitly in the code. It's a good practice to improve code readability.
+
+However, sometimes having context can enable new functionalities like request identifier in logs (described below). XpressJS uses `express-http-context` library internally to provide context to your applications.
+
+It is very easy to use it. You just need to initialize context at start of initializing your `app` instance:
+
+```javascript
+const { context } = require('xpressjs')
+
+// create `app` instance
+context.useContext(app)
+
+// next initialization
+```
+
+Then you can use context in every piece of code. You can store data in context under a given key:
+
+```javascript
+const { context } = require('xpressjs')
+
+const user = {
+  email: 'jdoe@example.com'
+}
+context.setContext('userData', user)
+```
+
+and later get the data in other place:
+
+```javascript
+const { context } = require('xpressjs')
+
+const user = context.getContext('userData')
+```
+
+You can also update just a part of context data under the key, if data is an object:
+
+```javascript
+const { context } = require('xpressjs')
+
+const newData = { name: 'John', surname: 'Doe' }
+context.updateContext('userData', newData)
+
+context.getContext('userData') // { email: "jdoe@example.com", name: "John", surname: "Doe" }
+```
+
+> **Note:** Context is **NOT** shared between any two separated API calls. It doesn't matter if calls are done in parallel or one by one.
+
 ## Logging
 
-You can use any logging solution you want. However, it's not easy to replace all places where logs are used if you would like to change used library.
+XpressJS offers you a global logger which can be configured one time and then can be used in all places where it's needed. Basic logger from the library can be used without any additional configuration. It will just use `console` transport (with handling exceptions) as output and preconfigured formatters.
 
-XpressJS offers you a global logger which can be configured one time and then can be used in all places where it's needed. You can configure even more than one logger.
+Default preconfigured logger can be used like this:
 
-At start of your application, you can configure logger. Without any configuration, native `console` logger will be used.
+```javascript
+const { logger } = require('xpressjs')
 
-XpressJS logger (with logger id: `0`) is used in other XpressJS components.
+logger.default.info('Successfull usage of default logger')
+```
+
+or like this:
+
+```javascript
+const {
+  logger: { default: logger }
+} = require('xpressjs')
+
+logger.info('Successfull usage of default logger')
+```
+
+#### Logs format
+
+You can configure logger on your own and determine custom logs format. However, for default logger the format is already defined as:
+`[timestamp][app-name][level][request-id]: MESSAGE METADATA`
+
+- `timestamp` - date and time when log has been saved in ISO format
+- `app-name` - name of application taken from `package.json` file (`name` property)
+- `level` - log's level, eg. info, debug, error, etc.
+- `request-id` - optional request identifier; if not enabled, then it's not available in logs
+- `MESSAGE` - content of log's message
+- `METADATA` - optional JSON serialized with other data passed to the logger while logging
 
 ### Configure a logger
 
-Loggers are available under `loggers` property imported from Xpress. To configure a logger use `configureLogger()` method. It takes two arguments:
-* configurator method - required parameter which is a function returning configured logger object;
-* logger identifier - optional parameter being an identifier used to determine in the application, which configured logger should be used; if not given, `0` value will be passed as default.
+Logger functionality is available under `logger` property imported from XpressJS. There is a method - logger getter to get instance of logger. Getter function takes one optional parameter. It is `options` object, which can take the same values as `createLogger` from `winston` library. Passed `options` object is merged with default configuration provided by XpressJS.
+
+> **Note:** You can configure logger in a separate file, eg. `/src/config/logger.js` and import it in all places in your application.
 
 Example configuration for Winston logger:
 
 ```javascript
-const winston = require('winston')
-const { loggers } = require('xpressjs')
+// /src/config/logger.js
+const { transports } = require('winston')
+const { logger } = require('xpressjs')
 
-loggers.configureLogger(() =>
-  winston.createLogger({
-    level: 'info',
-    format: winston.format.json(),
-    defaultMeta: { service: 'user-service' },
-    transports: [
-      new winston.transports.File({ filename: 'error.log', level: 'error' }),
-      new winston.transports.File({ filename: 'combined.log' })
-    ]
-  })
-)
+module.exports = logger.getLogger({
+  transports: [
+    new transports.Console({
+      handleExceptions: false
+    })
+  ]
+})
 ```
 
-### Access to loggers
+Then you can import this logger eg. like this:
 
-You can get configured loggers using `getLogger()` method from `loggers` property imported from XpressJS. It takes one optional argument which is identifier of configured logger. If not given, `0` value is taken as default.
-
-Example code with getting loggers:
 ```javascript
-const { loggers } = require('xpressjs')
-
-const fileLogger = loggers.getLogger('file')
-fileLogger.info('This is info log logged with file logger configured in an application')
-
-
-const consoleLogger = loggers.getLogger('console')
-consoleLogger.info('This is info log logged with console logger configured in an application')
+const logger = require('../config/logger')
 ```
 
-### Access to default logger
-If you configured a default logger by giving no logger id parameter to `configureLogger()` method, you can get default logger in a way described in the chapter above:
-```javascript
-const { loggers } = require('xpressjs')
-const logger = loggers.getLogger()
-```
+### Request id in logs
 
-However, XpressJS provides even simpler way to get default logger. It's just enough to import and use `logger` property as it's shown below:
+You can use context in logs by writing own formatter. However, there is one native functionality in the logger: adding request id to logs. Unique UUID identifier is generated for every request and then attached to every log. This way you can distinguish logs from many requests.
+
+To use request ids you should just add the following code at start of initialization of your ExpressJS app:
+
 ```javascript
 const { logger } = require('xpressjs')
-loger.info('This is info log logged with default logger')
+
+// create `app` instance
+logger.useRid(app)
+
+// next initialization
+```
+
+In the example above you don't need additionally to initialize Context functionality as it is done internally. If you want to use Context in the same application for other purposes too, you can do it without having any conflict with request id functionality.
+
+### Customize formatters
+
+Default logger uses built-in formatters. There are two formatters provided by XpressJS library. If you overwrite `format` in `options` parameter of `getLogger` function, you have to use these formatters explicitly in code if you want them.
+
+First is context formatter. It adds context data to the logs. If you want to use request ids in logs, you have to use `context` formatter in new version of `format` option:
+
+```javascript
+// /src/config/logger.js
+const { format } = require('winston')
+const { logger } = require('xpressjs')
+
+const { combine, timestamp, label } = format
+
+module.exports = logger.getLogger({
+    format: combine(timestamp(), logger.context(), logger.output),
+})
 ```
 
 ## Error handling
@@ -317,7 +405,9 @@ function register(req, res, next) {
     .catch((error) => next(error))
 }
 ```
+
 Code above will make response as below:
+
 ```json
 {
   "status": 201,
@@ -326,9 +416,11 @@ Code above will make response as below:
 ```
 
 #### Return related object
+
 Sometimes you may need to return object related to the request, e.g. for new user frontend may need identifier created on the backend side.
 
 Below is the same code but additionally object of new user is returned.
+
 ```javascript
 function register(req, res, next) {
   const { email, password, name, surname } = req.body
@@ -337,7 +429,9 @@ function register(req, res, next) {
     .catch((error) => next(error))
 }
 ```
+
 Assuming this request body:
+
 ```json
 {
   "email": "mail@example.com",
@@ -346,7 +440,9 @@ Assuming this request body:
   "surname": "Smith"
 }
 ```
+
 code above will make response as below:
+
 ```json
 {
   "status": 201,
@@ -775,21 +871,19 @@ const { env, logger } = require('xpressjs')
 
 // other parts of main file, including `app` constant initialization
 
-env.validator.checkRequiredVars([
-  'JWT_SECRET_TOKEN',
-  'EXTERNAL_API_TOKEN'
-])
-.then(() => {
-  app.listen(3000, () => {
-    logger.getLogger().info('Server is listening on port 3000')
+env.validator
+  .checkRequiredVars(['JWT_SECRET_TOKEN', 'EXTERNAL_API_TOKEN'])
+  .then(() => {
+    app.listen(3000, () => {
+      logger.getLogger().info('Server is listening on port 3000')
+    })
   })
-})
-.catch(error => {
-  // log information about not available variables
-  logger.getLogger().error(error.message)
-  // exit the application to prevent issues related to lacking variables
-  process.exit(1)
-})
+  .catch((error) => {
+    // log information about not available variables
+    logger.getLogger().error(error.message)
+    // exit the application to prevent issues related to lacking variables
+    process.exit(1)
+  })
 ```
 
 This example requires `dotenv` package to be installed.
@@ -799,12 +893,14 @@ This example requires `dotenv` package to be installed.
 Asynchronous operations are very common in NodeJS applications. Standard way to handle both success and error is a `then/catch` construction, similar to `try/catch` from non-promised approach. However sometimes you need only to handle result or error and do something with it.
 
 XpressJS comes with simple method to handle asynchronous promises in a more synchronous way. It is offered by `sync()` function which takes Promise object and return object with two properties:
-* `error` - error object if reported, otherwise `null` value;
-* `result` - result of a promise if everything happened correctly, otherwise `null` value.
+
+- `error` - error object if reported, otherwise `null` value;
+- `result` - result of a promise if everything happened correctly, otherwise `null` value.
 
 `sync()` function handles both cases: success and error. It allows to have the same code for both situations.
 
 Below is an example of how to use `sync()` function. The code contains `getContent` function which handles errors and logs them. If everything is correct, it returns response data.
+
 ```javascript
 const axios = require('axios')
 const { sync } = require('xpressjs')
@@ -814,18 +910,20 @@ const { sync } = require('xpressjs')
  * @returns {Promise<?string>}
  */
 async function getContent(url) {
-    const {error, result} = await sync(axios.get(url))
-    if (error) {
-        console.log(`Error occured while fetching content: ${error.message}`)
-    }
-    return result.data
+  const { error, result } = await sync(axios.get(url))
+  if (error) {
+    console.log(`Error occured while fetching content: ${error.message}`)
+  }
+  return result.data
 }
 ```
 
 ## Health check
+
 It is a good practice to prepare an endpoint to verify availability of the whole API. XpressJS offers a very simple way to implement basic health check controller under `GET /` path.
 
 To add health check controller you just need to import `healthcheck` function from XpressJS and execute `healthcheck.useHealthCheck` in your main file. An example of basic setup is below:
+
 ```javascript
 const express = require('express')
 const { healthcheck } = require('xpressjs')
@@ -833,7 +931,9 @@ const { healthcheck } = require('xpressjs')
 const app = express()
 healthcheck.useHealthCheck(app)
 ```
+
 Code above health check endpoint of the application. This endpoint is available under the path: `GET /` and returns result with `application/json` type. Result looks like this:
+
 ```json
 {
   "app": {
@@ -844,18 +944,22 @@ Code above health check endpoint of the application. This endpoint is available 
   "result": "success"
 }
 ```
+
 Fields mean:
-* `app.name` - application name taken from `name` field in `package.json` file;
-* `app.version` - application version taken from `version` field in `package.json` file;
-* `date` - date and time of calling the endpoint;
-* `result` - constant `success` string, always the same.
+
+- `app.name` - application name taken from `name` field in `package.json` file;
+- `app.version` - application version taken from `version` field in `package.json` file;
+- `date` - date and time of calling the endpoint;
+- `result` - constant `success` string, always the same.
 
 ### Customize health check controller
+
 You may want to do additional checks when health check controller is called. You can do it just by passing second argument to `useHealthCheck` function. If you pass a value there, it must be a function taking three arguments like every Express controller: `req`, `res` and `next`. You don't need to use these parameters.
 
 Callback function should return nothing or an object. If object is returned, it will be merged with default health check result and returned as a response.
 
 Below is an example of custom callback which checks availability of additional services.
+
 ```javascript
 const express = require('express')
 const { healthcheck } = require('xpressjs')
@@ -863,18 +967,19 @@ const { healthcheck } = require('xpressjs')
 const app = express()
 
 function healthCheckCallback(req, res, next) {
-    return {
-        availability: {
-            db: true,
-            cdn: true,
-            sap: false
-        }
+  return {
+    availability: {
+      db: true,
+      cdn: true,
+      sap: false
     }
+  }
 }
 healthcheck.useHealthCheck(app, healthCheckCallback)
 ```
 
 When you call `GET /` endpoint, you get result like this:
+
 ```json
 {
   "app": {
@@ -892,7 +997,9 @@ When you call `GET /` endpoint, you get result like this:
 ```
 
 ### Health check controller
+
 You may want to implement health check endpoint in a different way than proposed by XpressJS library. Besides ready-to-use solution it provides to you a simple controller which you can just connect to any path you need. To use it you need to import `healthcheck.controller` like it's shown below.
+
 ```javascript
 const express = require('express')
 const { healthcheck } = require('xpressjs')
@@ -900,20 +1007,50 @@ const { healthcheck } = require('xpressjs')
 const app = express()
 app.get('/healthcheck', healthcheck.controller)
 ```
+
 It will make health check controller available under `GET /healthcheck` path.
 
 ## Sleep
+
 XpressJS library offers a simple `sleep()` function to stop executing an application and wait for a concrete time before continuing. It can be used eg. to ensure that application will not fail because of rate limit of external APIs.
 
 `sleep` function takes one parameter which is number of milliseconds determining length of the break. An example code is shown below.
+
 ```javascript
 const { sleep } = require('xpressjs')
 
 async function updateResources(resources) {
-    for (const resource of resources) {
-        await updateResource(resource)
-        await sleep(200)
-    }
+  for (const resource of resources) {
+    await updateResource(resource)
+    await sleep(200)
+  }
 }
 ```
+
 In the example `updateResources` function executes `updateResource` function for every passed resource. `updateResource` uses external API which permits to be called only 6 times per a second. `sleep` function will stop execution for 200ms after updating every resource to make sure that all requests will meet the rate limit.
+
+## Resolve Promises with delay
+
+Usually you want the application to execute the code as fast as possible. However, because of some restrictions like external API's rate limit you have to wait between next calls. You may use `sleep()` function from XpressJS, but the library comes with next functionality designed specially for asynchronous operations.
+
+API calls are always realized as Promises. If needed, you may use `delayed` function. It takes two parameters:
+* `p` - this is Promise object which should be resolved after a time;
+* `delay` - number of milliseconds that must elapse before Promise can be resolved.
+
+Example usage:
+```javascript
+const { delayed } = require('xpressjs')
+
+async function getData(pageNo) {
+    // implementation of fetching paginated data from external API
+}
+
+const totalPages = 10;
+const pages = Array.apply(null, {length: totalPages + 1}).map(Number.call, Number).slice(1);
+
+let allData = []
+for (const pageNo = 1; pageNo <= totalPages; pageNo++) {
+    const pageData = await delayed(getData(pageNo), 500); // delay 500ms before resolving the given promise
+    allData = [ ...allData, ...pageData]
+}
+```
