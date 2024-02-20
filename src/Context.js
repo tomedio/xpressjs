@@ -3,10 +3,16 @@ const httpContext = require('express-http-context')
 let contextInitialized = false
 
 /**
+ * Verify if context is initialized
+ * @returns {boolean}
+ */
+const isInitialized = () => contextInitialized;
+
+/**
  * Verify if context has been initialized
  */
 const verifyInitialization = () => {
-  if (!contextInitialized) {
+  if (!isInitialized()) {
     throw new Error('Context is used but not initialized')
   }
 }
@@ -54,6 +60,7 @@ const updateContext = (key, additionalData) => {
 }
 
 module.exports = {
+  isInitialized,
   useContext,
   setContext,
   updateContext,
