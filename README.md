@@ -11,6 +11,7 @@ XpressJS is a set of tools helpful with creating NodeJS applications based on [E
 - [Express](https://zod.dev/)
 - [ExpressHttpContext](https://zod.dev/)
 - [uuid](https://zod.dev/)
+- [node-fetch](https://www.npmjs.com/package/node-fetch)
 
 ## Installation
 
@@ -47,6 +48,7 @@ yarn add tomedio/xpressjs
 - [Health check](#health-check)
 - [Sleep](#sleep)
 - [Resolve Promises with delay](#resolve-promises-with-delay)
+- [Fetch API](#fetch-api)
 
 ## Parsing JSON body
 
@@ -1053,4 +1055,15 @@ for (const pageNo = 1; pageNo <= totalPages; pageNo++) {
     const pageData = await delayed(getData(pageNo), 500); // delay 500ms before resolving the given promise
     allData = [ ...allData, ...pageData]
 }
+```
+
+## Fetch API
+
+Node.js does not have implemented Fetch API natively. You can use `node-fetch` package for this purpose. However, the package is ESM-only module. If you want to use Fetch API in a project where you use CommonJS modules, XpressJS comes with a solution.
+
+You can just import `fetch` like in the example below:
+```javascript
+const { fetch } = require('xpressjs');
+
+const response = await fetch('https://example.com');
 ```

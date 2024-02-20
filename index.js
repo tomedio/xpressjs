@@ -21,6 +21,7 @@ module.exports = {
   healthcheck: require('./src/HealthCheck'),
   sleep: require('./src/Sleep'),
   delayed: require('./src/Delayed'),
+  fetch: require('./src/Fetch'),
   context: require('./src/Context'),
   logger: require('./src/logger')
 }
