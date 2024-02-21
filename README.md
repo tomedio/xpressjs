@@ -215,7 +215,7 @@ const { logger } = require('xpressjs')
 logger.default.info('Successfull usage of default logger')
 ```
 
-or like this:
+or to have Logger instance directly under `logger` variable:
 
 ```javascript
 const {
@@ -299,6 +299,8 @@ module.exports = logger.getLogger({
     format: combine(timestamp(), logger.context(), logger.output),
 })
 ```
+
+`logger.output` is responsible to determine logs format described above. If you don't specify it nor replace it by own formatter, logs will contain serialized data.
 
 ## Error handling
 
