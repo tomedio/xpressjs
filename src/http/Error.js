@@ -6,7 +6,7 @@ module.exports = {
     const message = errorMessage ?? getMessage(status) ?? 'An error occurred'
     let logMessage = `Error is raised: ${errorMessage}`
     if (cause) {
-      logMessage += `Cause: ${JSON.stringify(cause)}`
+      logMessage += ` Details: ${JSON.stringify(cause)}`
     }
     logger.default.error(logMessage)
     return {
