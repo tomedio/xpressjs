@@ -4,9 +4,11 @@ const logger = require('../logger')
 module.exports = {
   createError: function (status, errorMessage = null, cause = null) {
     const message = errorMessage ?? getMessage(status) ?? 'An error occurred'
+    let logMessage = `Error is raised: ${errorMessage}`
     if (cause) {
-      logger.default.error(JSON.stringify(cause))
+      logMessage += `Cause: ${JSON.stringify(cause)}`
     }
+    logger.default.error(logMessage)
     return {
       status,
       message
