@@ -956,6 +956,18 @@ Fields mean:
 - `date` - date and time of calling the endpoint;
 - `result` - constant `success` string, always the same.
 
+### Customize health check endpoint
+
+Generally health check endpoint is `/`. However, you may want to change it sometimes, eg. when your whole application works under `/app` or `/api` prefix.
+
+```javascript
+const express = require('express')
+const { healthcheck } = require('xpressjs')
+
+const app = express()
+healthcheck.useHealthCheck(app, '/api')
+```
+
 ### Customize health check controller
 
 You may want to do additional checks when health check controller is called. You can do it just by passing second argument to `useHealthCheck` function. If you pass a value there, it must be a function taking three arguments like every Express controller: `req`, `res` and `next`. You don't need to use these parameters.
@@ -979,7 +991,7 @@ function healthCheckCallback(req, res, next) {
     }
   }
 }
-healthcheck.useHealthCheck(app, healthCheckCallback)
+healthcheck.useHealthCheck(app, '/', healthCheckCallback)
 ```
 
 When you call `GET /` endpoint, you get result like this:

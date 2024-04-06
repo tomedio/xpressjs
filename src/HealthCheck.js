@@ -24,9 +24,10 @@ function healthCheckController(req, res) {
 /**
  * Apply health check controller to express app
  * @param {Object} app Express app object
- * @param {function|null}callback
+ * @param {string} endpoint Health check endpoint
+ * @param {function|null} callback
  */
-function useHealthCheck(app, callback = null) {
+function useHealthCheck(app, endpoint = '/', callback = null) {
   app.get('/', (req, res, next) => {
     let result = {}
     if (callback) {
