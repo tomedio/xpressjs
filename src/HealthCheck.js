@@ -28,7 +28,7 @@ function healthCheckController(req, res) {
  * @param {function|null} callback
  */
 function useHealthCheck(app, endpoint = '/', callback = null) {
-  app.get('/', (req, res, next) => {
+  app.get(endpoint, (req, res, next) => {
     let result = {}
     if (callback) {
       const callbackResult = callback(req, res, next)
