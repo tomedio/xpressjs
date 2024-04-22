@@ -3,7 +3,7 @@ const { createLogger, format, transports } = require('winston')
 
 const { context, output } = require('./Format')
 const utils = require('./Utils')
-const { useRid } = require('./RequestId')
+const { useRid, getRid } = require('./RequestId')
 
 // eslint-disable-next-line import/no-dynamic-require
 const packageJson = require(path.join(process.cwd(), 'package.json'))
@@ -35,5 +35,6 @@ module.exports = {
     output
   },
   useRid,
+  getRid,
   utils
 }

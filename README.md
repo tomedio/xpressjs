@@ -272,15 +272,37 @@ You can use context in logs by writing own formatter. However, there is one nati
 To use request ids you should just add the following code at start of initialization of your ExpressJS app:
 
 ```javascript
-const { logger } = require('xpressjs')
+const { logger: { useRid, getRid } } = require('xpressjs')
 
-// create `app` instance
-logger.useRid(app)
+// create `app` instance...
 
-// next initialization
+logger.useRid(app) // request id initialization
+
+// next initialization...
 ```
 
 In the example above you don't need additionally to initialize Context functionality as it is done internally. If you want to use Context in the same application for other purposes too, you can do it without having any conflict with request id functionality.
+
+#### Get current request id
+
+To get current request id you can use in code `getRid()` method as follows:
+```javascript
+const { logger: {getRid} } = require('xpressjs')
+
+// create `app` instance...
+
+logger.useRid(app) // request id initialization
+
+// next initialization...
+
+app.get('/', (req, res) => {
+    res.json({ requestId: getRid(), message: 'Request is handled successfully'})
+})
+
+// other code...
+```
+
+`getRid` method must be used inside a middleware or request handler, but only after request id initialization.
 
 ### Customize formatters
 
