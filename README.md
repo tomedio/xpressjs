@@ -1034,6 +1034,8 @@ When you call `GET /` endpoint, you get result like this:
 }
 ```
 
+Healthcheck callback can be synchronous or asynchronous function. XpressJS recognizes its type and works with both.
+
 ### Health check controller
 
 You may want to implement health check endpoint in a different way than proposed by XpressJS library. Besides ready-to-use solution it provides to you a simple controller which you can just connect to any path you need. To use it you need to import `healthcheck.controller` like it's shown below.
