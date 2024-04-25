@@ -1,6 +1,10 @@
 const path = require('path')
 const packageJson = require(path.join(process.cwd(), 'package.json'))
 
+/**
+ * Get basic health check result
+ * @return {{app: {name, version}, date: Date, result: string}}
+ */
 function getHealthCheckResult() {
   return {
     app: {
@@ -10,6 +14,14 @@ function getHealthCheckResult() {
     date: new Date(),
     result: 'success'
   }
+}
+
+/**
+ * Check if given value is a Promise object
+ * @param {*} value
+ */
+function isPromise(value) {
+  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function';
 }
 
 /**
@@ -28,10 +40,11 @@ function healthCheckController(req, res) {
  * @param {function|null} callback
  */
 function useHealthCheck(app, endpoint = '/', callback = null) {
-  app.get(endpoint, (req, res, next) => {
+  app.get(endpoint, async (req, res, next) => {
     let result = {}
     if (callback) {
-      const callbackResult = callback(req, res, next)
+      const callbackRawResult = callback(req, res, next)
+      const callbackResult = isPromise(callbackRawResult) ? await callbackRawResult : callbackRawResult;
       if (callbackResult && typeof callbackResult === 'object') {
         result = callbackResult
       }
