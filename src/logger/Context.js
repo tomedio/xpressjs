@@ -14,7 +14,7 @@ const setContext = (context) => {
  * Get logs context object if set
  * @returns {Object|null}
  */
-const getContext = () => BasicContext.isInitialized() ? BasicContext.getContext(LOGGER_CONTEXT_KEY) : null;
+const getContext = () => (BasicContext.isInitialized() ? BasicContext.getContext(LOGGER_CONTEXT_KEY) : null)
 
 /**
  * Update current logs context with passed data

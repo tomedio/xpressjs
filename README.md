@@ -12,6 +12,8 @@ XpressJS is a set of tools helpful with creating NodeJS applications based on [E
 - [ExpressHttpContext](https://zod.dev/)
 - [uuid](https://zod.dev/)
 - [node-fetch](https://www.npmjs.com/package/node-fetch)
+- [swagger-autogen](https://swagger-autogen.github.io/docs/)
+- [swagger-ui-express](https://www.npmjs.com/package/swagger-ui-express)
 
 ## Installation
 
@@ -49,6 +51,8 @@ yarn add tomedio/xpressjs
 - [Sleep](#sleep)
 - [Resolve Promises with delay](#resolve-promises-with-delay)
 - [Fetch API](#fetch-api)
+- [Swagger documentation](#swagger-documentation)
+- [Utils](#utils)
 
 ## Parsing JSON body
 
@@ -272,7 +276,9 @@ You can use context in logs by writing own formatter. However, there is one nati
 To use request ids you should just add the following code at start of initialization of your ExpressJS app:
 
 ```javascript
-const { logger: { useRid, getRid } } = require('xpressjs')
+const {
+  logger: { useRid, getRid }
+} = require('xpressjs')
 
 // create `app` instance...
 
@@ -286,8 +292,11 @@ In the example above you don't need additionally to initialize Context functiona
 #### Get current request id
 
 To get current request id you can use in code `getRid()` method as follows:
+
 ```javascript
-const { logger: {getRid} } = require('xpressjs')
+const {
+  logger: { getRid }
+} = require('xpressjs')
 
 // create `app` instance...
 
@@ -296,7 +305,7 @@ logger.useRid(app) // request id initialization
 // next initialization...
 
 app.get('/', (req, res) => {
-    res.json({ requestId: getRid(), message: 'Request is handled successfully'})
+  res.json({ requestId: getRid(), message: 'Request is handled successfully' })
 })
 
 // other code...
@@ -318,7 +327,7 @@ const { logger } = require('xpressjs')
 const { combine, timestamp, label } = format
 
 module.exports = logger.getLogger({
-    format: combine(timestamp(), logger.context(), logger.output),
+  format: combine(timestamp(), logger.context(), logger.output)
 })
 ```
 
@@ -1074,24 +1083,28 @@ In the example `updateResources` function executes `updateResource` function for
 Usually you want the application to execute the code as fast as possible. However, because of some restrictions like external API's rate limit you have to wait between next calls. You may use `sleep()` function from XpressJS, but the library comes with next functionality designed specially for asynchronous operations.
 
 API calls are always realized as Promises. If needed, you may use `delayed` function. It takes two parameters:
-* `p` - this is Promise object which should be resolved after a time;
-* `delay` - number of milliseconds that must elapse before Promise can be resolved.
+
+- `p` - this is Promise object which should be resolved after a time;
+- `delay` - number of milliseconds that must elapse before Promise can be resolved.
 
 Example usage:
+
 ```javascript
 const { delayed } = require('xpressjs')
 
 async function getData(pageNo) {
-    // implementation of fetching paginated data from external API
+  // implementation of fetching paginated data from external API
 }
 
-const totalPages = 10;
-const pages = Array.apply(null, {length: totalPages + 1}).map(Number.call, Number).slice(1);
+const totalPages = 10
+const pages = Array.apply(null, { length: totalPages + 1 })
+  .map(Number.call, Number)
+  .slice(1)
 
 let allData = []
 for (const pageNo = 1; pageNo <= totalPages; pageNo++) {
-    const pageData = await delayed(getData(pageNo), 500); // delay 500ms before resolving the given promise
-    allData = [ ...allData, ...pageData]
+  const pageData = await delayed(getData(pageNo), 500) // delay 500ms before resolving the given promise
+  allData = [...allData, ...pageData]
 }
 ```
 
@@ -1100,8 +1113,265 @@ for (const pageNo = 1; pageNo <= totalPages; pageNo++) {
 Node.js does not have implemented Fetch API natively. You can use `node-fetch` package for this purpose. However, the package is ESM-only module. If you want to use Fetch API in a project where you use CommonJS modules, XpressJS comes with a solution.
 
 You can just import `fetch` like in the example below:
-```javascript
-const { fetch } = require('xpressjs');
 
-const response = await fetch('https://example.com');
+```javascript
+const { fetch } = require('xpressjs')
+
+const response = await fetch('https://example.com')
+```
+
+## Swagger documentation
+
+XpressJS offers a simple way to generate Swagger documentation for your API. It can both generate a Swagger file and serve documentation page under a specific path.
+
+Under the hood, it uses `swagger-autogen` package. You can find more information about it [here](https://www.npmjs.com/package/swagger-autogen).
+
+### Generate Swagger file
+
+To generate Swagger file you need to import `swagger` object from XpressJS and use `generate` method. It takes three parameters:
+
+- `outputPath` - path where the file should be saved;
+- `swaggerDefinition` - object with Swagger definition, prepared in accordance with the OpenApi standard;
+- `endpointsFiles` - array of paths to files with endpoints definitions.
+
+Assuming that you have routes defined in the `routes.js` file and swagger definition is in the `swagger/definition.js`, you can generate Swagger file like this:
+
+```javascript
+// swagger.js
+const {
+  swagger: { generate }
+} = require('xpressjs')
+const swaggerDefinition = require('./swagger/definition')
+
+generate('docs/OAS3.json', swaggerDefinition, ['./routes.js']).then(() => console.log('Swagger file generated'))
+```
+
+If you want to automate this process, you can add a script to your `package.json` file:
+
+```json
+{
+  "scripts": {
+    "generate-swagger": "node swagger.js"
+  }
+}
+```
+
+Then you can run it with `npm run generate-swagger` to generate `docs/OAS3.json` with the newest version of Swagger documentation.
+
+### Serve Swagger documentation under a specific path
+
+To serve Swagger documentation page you need to prepare an endpoint with Swagger documentation and then to add it to the application.
+
+To do first step, you have to import `swagger` object from XpressJS and use `getSwaggerEndpoint` method. It takes three parameters:
+
+- `swaggerDefinition` - object with Swagger definition, prepared in accordance with the OpenApi standard;
+- `endpointsFiles` - array of paths to files with endpoints definitions;
+- `swaggerOptions` - an optional object with additional Swagger configuration; more info you can find in the documentation of `swagger-autogen` package.
+
+`getSwaggerEndpoint` is asynchronous function and returns handler that can be used in a second step - to add documentation endpoint to the application. You can do it by using `useSwagger` method from `swagger` object imported from XpressJS library. The method takes three parameters:
+
+- `app` - ExpressJS application instance;
+- `handler` - handler returned by `getSwaggerEndpoint` method;
+- `endpointPath` - an optional path to the endpoint with Swagger documentation; as default value is used `/docs`.
+
+**Watch-out!** Starting the server application should be done after adding the Swagger documentation endpoint within `then` block after `getSwaggerEndpoint` method, as shown in the example below.
+
+**Watch-out!** If you want to use `handleNotFound` and `statusHandler` from XpressJS library, you should put them within `then` block after `getSwaggerEndpoint` method, before starting the application.
+
+```javascript
+// create app instance here...
+
+const {
+  swagger: { getSwaggerEndpoint, useSwagger }
+} = require('xpressjs')
+const logger = require('./config/logger')
+const swaggerDefinition = require('./swagger/definition')
+
+getSwaggerEndpoint(swaggerDefinition, ['./routes.js'])
+  .then((handler) => {
+    useSwagger(app, handler)
+    app.use(handleNotFound('API endpoint not found'))
+    app.use(statusHandler.handle())
+
+    const port = process.env.PORT || 3000
+    app.listen(port, () => {
+      logger.info(`Server is listening on port ${port}`)
+    })
+  })
+  .catch((errorMessage) => logger.error(errorMessage))
+```
+
+To use a path different than `/docs` you can pass it as a third parameter to `useSwagger` method:
+
+```javascript
+useSwagger(app, handler, '/api-docs')
+```
+
+### Swagger definition
+
+Swagger definition is a JSON object with OpenApi standard. It should contain all necessary information about your API. Patches are generated automatically so don't need to be included here. You may put
+
+Below is an example of Swagger definition. The example contains JS file for better adaptability. You may use JSON file as well.
+
+```javascript
+module.exports = {
+  info: {
+    title: 'API application title',
+    version: '1.0.0',
+    description: 'API application description',
+    contact: {
+      name: 'App author',
+      email: 'contact@example.com',
+    }
+  },
+  servers: [
+    {
+      url: 'http://localhost:3000'
+    }
+  ],
+  components: {
+    '@schemas': {
+      ...require('./Healthcheck.schema.js'),
+      ...require('./Response.schema.js'),
+      ...require('./ErrorResponse.schema.js')
+    }
+  }
+}
+```
+
+In this example models are extracted to separate files. It's a good practice to keep Swagger definition file as clean as possible.
+
+### Models
+
+Swagger definition may contain models. They are used to describe structure of request and response bodies. Models are defined in the `components` object under `@schemas` key. Each model is a separate object with properties describing fields.
+
+XpressJS provides prototypes of models for common use cases. You can find them in the `models` directory in the library. Below is an example of `Healthcheck` model definition.
+
+```javascript
+const {
+  swagger: { models },
+  utils: { deepMerge }
+} = require('xpressjs')
+
+module.exports = {
+  Healthcheck: deepMerge(models.Healthcheck, {
+    properties: {
+      services: {
+        type: 'object',
+        description: 'Status of external services',
+        properties: {
+          service1: {
+            type: 'boolean',
+            description: 'Status of Service1 service',
+            example: true
+          },
+          service2: {
+            type: 'boolean',
+            description: 'Status of Service2 service',
+            example: false
+          }
+        }
+      }
+    }
+  })
+}
+```
+
+**Watch-out!** Two models: `Healthcheck` and `ErrorResponse` are defined by XpressJS and automatically attached to Swagger definition. So both will be available even if you don't define them in your configuration. As shown above, you can redefine them and overwrite.
+
+#### Models defined in the library
+
+XpressJS defines three models:
+
+- `Healthcheck` - model for health check response;
+- `SuccessResponse` - model for successful response;
+- `ErrorResponse` - model for error response.
+
+All are available in the `models` object imported from the library.
+
+**Healthcheck** model:
+
+- `app` - object with information about the application;
+  - `name` - name of the application;
+  - `version` - version of the application.
+- `date` - date and time of the health check.
+- `result` - constant string `success`.
+
+**SuccessResponse** model:
+
+- `status` - HTTP status code;
+- `message` - message about the success;
+- `object` - optional object with additional data; it may be extended by a developer in an application.
+
+**ErrorResponse** model:
+
+- `status` - HTTP status code;
+- `message` - message about the error;
+- `error` - optional object with additional data; it may be extended by a developer in an application.
+
+## Utils
+
+XpressJS comes with some helper functions to simplify your common use cases. All these utility functions are available under `utils` key in the library.
+
+```javascript
+const { utils } = require('xpressjs')
+```
+
+### Deep merge
+
+Sometimes you may need to merge two objects together. You can do this by using `deepMerge` function and pass both objects as parameters. Below is an example.
+
+```javascript
+const {
+  utils: { deepMerge }
+} = require('xpressjs')
+
+const obj1 = {
+  a: 1,
+  b: {
+    c: 2,
+    d: 3
+  }
+}
+const obj2 = {
+  b: {
+    c: 4
+  },
+  e: 5
+}
+
+const merged = deepMerge(obj1, obj2)
+/*
+Result:
+{
+  a: 1,
+  b: {
+    c: 4,
+    d: 3
+  },
+  e: 5
+}
+ */
+```
+
+### Chunk array
+
+If you have an array, and you want to split it into smaller arrays, you can use `chunkArray` function. It takes two parameters: an array to split and a number of elements in a chunk. Below is an example.
+
+```javascript
+const {
+  utils: { chunkArray }
+} = require('xpressjs')
+
+const array = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10]
+const chunked = chunkArray(array, 3)
+/*
+Result:
+[
+  [1, 2, 3],
+  [4, 5, 6],
+  [7, 8, 9],
+  [10]
+]
+ */
 ```

@@ -1,6 +1,6 @@
 const { createError } = require('./http/Error')
 const { getMessage } = require('./http/Messages')
-const logger = require("./logger");
+const logger = require('./logger')
 
 module.exports = {
   handle: function (serverErrorMessage = getMessage(500)) {

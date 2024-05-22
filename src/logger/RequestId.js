@@ -1,4 +1,4 @@
-const { updateContext, getContext} = require('./Context')
+const { updateContext, getContext } = require('./Context')
 const { v4: uuidv4 } = require('uuid')
 const { useContext } = require('../Context')
 
@@ -13,7 +13,7 @@ const useRid = (app) => {
 }
 
 const getRid = () => {
-  return getContext()?.requestId;
+  return getContext()?.requestId
 }
 
 module.exports = {

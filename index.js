@@ -23,5 +23,7 @@ module.exports = {
   delayed: require('./src/Delayed'),
   fetch: require('./src/Fetch'),
   context: require('./src/Context'),
-  logger: require('./src/logger')
+  logger: require('./src/logger'),
+  swagger: require('./src/swagger'),
+  utils: require('./src/utils')
 }

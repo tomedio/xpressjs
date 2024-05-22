@@ -21,7 +21,7 @@ function getHealthCheckResult() {
  * @param {*} value
  */
 function isPromise(value) {
-  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function';
+  return !!value && (typeof value === 'object' || typeof value === 'function') && typeof value.then === 'function'
 }
 
 /**
@@ -44,7 +44,7 @@ function useHealthCheck(app, endpoint = '/', callback = null) {
     let result = {}
     if (callback) {
       const callbackRawResult = callback(req, res, next)
-      const callbackResult = isPromise(callbackRawResult) ? await callbackRawResult : callbackRawResult;
+      const callbackResult = isPromise(callbackRawResult) ? await callbackRawResult : callbackRawResult
       if (callbackResult && typeof callbackResult === 'object') {
         result = callbackResult
       }

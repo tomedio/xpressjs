@@ -1,7 +1,7 @@
 {
   "name": "xpressjs",
   "author": "Tomasz Bajorek <tomasz.bajorek@tomedio.com> (https://tomedio.com/)",
-  "version": "1.0.23",
+  "version": "1.0.25",
   "engines": {
     "node": ">=15.0.0"
   },
@@ -22,9 +22,10 @@
     "version:upgrade": "npm version patch --git-tag-version false"
   },
   "keywords": [
+    "nodejs",
     "expressjs",
-    "prisma",
-    "api"
+    "api",
+    "library"
   ],
   "license": "ISC",
   "dependencies": {
@@ -35,6 +36,8 @@
     "express-http-context": "^1.2.4",
     "jsonwebtoken": "^9.0.1",
     "node-fetch": "^3.3.2",
+    "swagger-autogen": "^2.23.7",
+    "swagger-ui-express": "^5.0.0",
     "uuid": "^9.0.0",
     "winston": "^3.11.0",
     "zod": "^3.22.2"

@@ -6,7 +6,7 @@ let contextInitialized = false
  * Verify if context is initialized
  * @returns {boolean}
  */
-const isInitialized = () => contextInitialized;
+const isInitialized = () => contextInitialized
 
 /**
  * Verify if context has been initialized
