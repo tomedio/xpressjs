@@ -50,24 +50,17 @@ function generate(outputPath, swaggerDefinition, endpointsFiles) {
 }
 
 /**
- * Prepare handler for Swagger endpoint
+ * Use Swagger in the application
+ * @param {Object} app - Express application
  * @param {Object} swaggerDefinition - Basic definition of the Swagger
  * @param {string[]} endpointsFiles - Array of patches to endpoints files
  * @param {Object} swaggerOptions - Options for Swagger
- * @return {Promise<(function(*, *): void)|*>} Handler for Swagger endpoint
+ * @param {string} endpoint - Optional endpoint for Swagger, "/docs" by default
  */
-function getSwaggerEndpoint(swaggerDefinition, endpointsFiles, swaggerOptions = {}) {
-  return getHandler(deepMerge(defaultDefinition, swaggerDefinition), endpointsFiles, swaggerOptions)
-}
-
-/**
- * Use Swagger endpoint in the application
- * @param {Object} app - Express application
- * @param {function} handler Handler to be called when Swagger endpoint is requested
- * @param {string} endpointPath - Optional endpoint for Swagger, "/docs" by default
- */
-function useSwagger(app, handler, endpointPath = '/docs') {
-  app.use(endpointPath, getMiddleware(), handler)
+function useSwagger(app, swaggerDefinition, endpointsFiles, swaggerOptions = {}, endpoint = '/docs') {
+  return getHandler(deepMerge(defaultDefinition, swaggerDefinition), endpointsFiles, swaggerOptions).then((handler) =>
+    app.use(endpoint, getMiddleware(), handler)
+  )
 }
 
 /**
@@ -79,7 +72,6 @@ function getMiddleware() {
 }
 
 module.exports = {
-  getSwaggerEndpoint,
   useSwagger,
   generate,
   models

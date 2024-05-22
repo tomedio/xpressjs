@@ -1221,7 +1221,7 @@ module.exports = {
     description: 'API application description',
     contact: {
       name: 'App author',
-      email: 'contact@example.com',
+      email: 'contact@example.com'
     }
   },
   servers: [
@@ -1374,4 +1374,39 @@ Result:
   [10]
 ]
  */
+```
+
+### Filter unique values
+
+If you have an array with duplicated values, and you want to get only unique values, you can use `unique` function. It takes two parameters:
+
+- `arr` - an array with values;
+- `fn` - an optional function to determine uniqueness of values.
+
+If an array contains simple values, there is no need to pass `fn`, because items are considered as values to determine uniqueness. If you have an array with objects, you can pass a function to get unique value for every item.
+
+```javascript
+const {
+  utils: { unique }
+} = require('xpressjs')
+
+const array = [1, 2, 3, 2, 1, 4, 5, 6, 5, 7]
+const uniqueValues = unique(array)
+
+// Result: [1, 2, 3, 4, 5, 6, 7]
+```
+
+### Filter non-empty values
+
+If you have an array containing empty values, and you want to get only non-empty items, you can use `nonEmpty` function. It takes one parameter: an array with values.
+
+```javascript
+const {
+  utils: { nonEmpty }
+} = require('xpressjs')
+
+const array = [1, '', 3, null, 5, undefined, 7]
+const nonEmptyValues = nonEmpty(array)
+
+// Result: [1, 3, 5, 7]
 ```
