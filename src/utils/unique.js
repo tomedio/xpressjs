@@ -6,7 +6,7 @@
  */
 function unique(arr, fn = null) {
   const uniqueItems = new Map();
-  return this.filter(item => {
+  return arr.filter(item => {
     const key = fn ? fn(item) : item;
     const isNew = !uniqueItems.has(key);
     if (isNew) uniqueItems.set(key, true);
