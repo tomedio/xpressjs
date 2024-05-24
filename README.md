@@ -1207,7 +1207,7 @@ To use a path different than `/docs` you can pass it as a third parameter to `us
 useSwagger(app, handler, '/api-docs')
 ```
 
-When you go to `/docs` path in your application, you will see Swagger documentation page. If you attach `Accept: application/json` header to the request, you will get JSON file with Swagger definition.
+When you go to `/docs` path in your application, you will see Swagger documentation page. If you attach `Accept: application/json` header to the request **or** `format=json` as a query parameter, you will get JSON file with Swagger definition.
 
 ### Swagger definition
 
