@@ -23,7 +23,15 @@ async function getHandler(swaggerDefinition, endpointsFiles, swaggerOptions) {
   })
   const result = await swaggerAutogen('./swagger-output.json', endpointsFiles, swaggerDefinition)
   if (result.success) {
-    return swaggerUi.setup(result.data, swaggerOptions)
+    return (req, res) => {
+      const acceptHeader = req.get('Accept');
+      if (acceptHeader === 'application/json') {
+        res.json(result.data);
+      } else {
+        swaggerUi.setup(result.data, swaggerOptions)(req, res)
+      }
+
+    }
   } else {
     throw new Error('Swagger can not be generated right now. Check definitions and try again.')
   }

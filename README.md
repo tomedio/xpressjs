@@ -1207,6 +1207,8 @@ To use a path different than `/docs` you can pass it as a third parameter to `us
 useSwagger(app, handler, '/api-docs')
 ```
 
+When you go to `/docs` path in your application, you will see Swagger documentation page. If you attach `Accept: application/json` header to the request, you will get JSON file with Swagger definition.
+
 ### Swagger definition
 
 Swagger definition is a JSON object with OpenApi standard. It should contain all necessary information about your API. Patches are generated automatically so don't need to be included here. You may put
