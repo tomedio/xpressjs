@@ -1,6 +1,8 @@
 const path = require('path')
 const packageJson = require(path.join(process.cwd(), 'package.json'))
 
+const EndpointsRegistry = require('./swagger/EndpointsRegistry')
+
 /**
  * Get basic health check result
  * @return {{app: {name, version}, date: Date, result: string}}
@@ -40,6 +42,7 @@ function healthCheckController(req, res) {
  * @param {function|null} callback
  */
 function useHealthCheck(app, endpoint = '/', callback = null) {
+  EndpointsRegistry.setHealthcheck(endpoint)
   app.get(endpoint, async (req, res, next) => {
     let result = {}
     if (callback) {

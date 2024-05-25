@@ -1158,6 +1158,25 @@ If you want to automate this process, you can add a script to your `package.json
 
 Then you can run it with `npm run generate-swagger` to generate `docs/OAS3.json` with the newest version of Swagger documentation.
 
+#### Additional endpoints
+
+Some endpoints may be added automatically to Swagger definition. These are:
+* `/healthcheck` - if you use XpressJS health check controller;
+* `/docs` - if you use XpressJS Swagger documentation controller.
+
+Swagger provider used for serving documentation under a specific path, described below, adds these endpoints automatically. However, generator doesn't have such knowledge. That's why you have to specify all endpoints files in the `endpointsFiles` parameter. It's an optional parameter passed to `generate` method. If you don't pass it, these endpoints will not be included in the Swagger file.
+
+```javascript
+// swagger.js
+const {
+  swagger: { generate }
+} = require('xpressjs')
+const swaggerDefinition = require('./swagger/definition')
+
+generate('docs/OAS3.json', swaggerDefinition, ['./routes.js'], {healthcheck: '/', docs: '/docs'})
+  .then(() => console.log('Swagger file generated'))
+```
+
 ### Serve Swagger documentation under a specific path
 
 To serve Swagger documentation page you need to prepare an endpoint with Swagger documentation and then to add it to the application.
@@ -1166,15 +1185,14 @@ To do first step, you have to import `swagger` object from XpressJS and use `get
 
 - `swaggerDefinition` - object with Swagger definition, prepared in accordance with the OpenApi standard;
 - `endpointsFiles` - array of paths to files with endpoints definitions;
-- `swaggerOptions` - an optional object with additional Swagger configuration; more info you can find in the documentation of `swagger-autogen` package.
-
-`getSwaggerEndpoint` is asynchronous function and returns handler that can be used in a second step - to add documentation endpoint to the application. You can do it by using `useSwagger` method from `swagger` object imported from XpressJS library. The method takes three parameters:
-
-- `app` - ExpressJS application instance;
-- `handler` - handler returned by `getSwaggerEndpoint` method;
 - `endpointPath` - an optional path to the endpoint with Swagger documentation; as default value is used `/docs`.
 
-**Watch-out!** Starting the server application should be done after adding the Swagger documentation endpoint within `then` block after `getSwaggerEndpoint` method, as shown in the example below.
+`getSwaggerEndpoint` is asynchronous function and returns handler that can be used in a second step - to add documentation endpoint to the application. You can do it by using `useSwagger` method from `swagger` object imported from XpressJS library. The method takes two parameters:
+
+- `app` - ExpressJS application instance;
+- `handler` - handler returned by `getSwaggerEndpoint` method.
+
+**Watch-out!** Starting the server application should be done after adding the Swagger documentation endpoint within `then` block after `getSwaggerEndpoint` method, as shown in the example below. `useSwagger` method should be called as the first command there.
 
 **Watch-out!** If you want to use `handleNotFound` and `statusHandler` from XpressJS library, you should put them within `then` block after `getSwaggerEndpoint` method, before starting the application.
 
@@ -1201,11 +1219,13 @@ getSwaggerEndpoint(swaggerDefinition, ['./routes.js'])
   .catch((errorMessage) => logger.error(errorMessage))
 ```
 
-To use a path different than `/docs` you can pass it as a third parameter to `useSwagger` method:
+To use a path different than `/docs` you can pass it as a third parameter to `getSwaggerEndpoint` method:
 
 ```javascript
-useSwagger(app, handler, '/api-docs')
+getSwaggerEndpoint(swaggerDefinition, ['./routes.js'], '/api-docs')
 ```
+
+#### Documentation content types
 
 When you go to `/docs` path in your application, you will see Swagger documentation page. If you attach `Accept: application/json` header to the request **or** `format=json` as a query parameter, you will get JSON file with Swagger definition.
 
