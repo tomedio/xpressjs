@@ -30,7 +30,7 @@ function getLogger(options = {}) {
 const defaultLogger = getLogger()
 
 const uniqueTimestampLogger = getLogger({
-  format: combine(label({ label: LabelValue }), uniqueTimestamp(), context(), output),
+  format: combine(label({ label: labelValue }), uniqueTimestamp(), context(), output),
 })
 
 module.exports = {
