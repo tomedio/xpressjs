@@ -269,6 +269,14 @@ Then you can import this logger eg. like this:
 const logger = require('../config/logger')
 ```
 
+You may also use preconfigured default logger:
+
+```javascript
+const { logger } = require('xpressjs')
+
+module.exports = logger.default
+```
+
 ### Request id in logs
 
 You can use context in logs by writing own formatter. However, there is one native functionality in the logger: adding request id to logs. Unique UUID identifier is generated for every request and then attached to every log. This way you can distinguish logs from many requests.
@@ -317,21 +325,46 @@ app.get('/', (req, res) => {
 
 Default logger uses built-in formatters. There are two formatters provided by XpressJS library. If you overwrite `format` in `options` parameter of `getLogger` function, you have to use these formatters explicitly in code if you want them.
 
-First is context formatter. It adds context data to the logs. If you want to use request ids in logs, you have to use `context` formatter in new version of `format` option:
+First is context formatter. It adds context data to the logs. If you want to use request ids in logs, you have to use `formatters.context()` formatter in new version of `format` option:
 
 ```javascript
 // /src/config/logger.js
 const { format } = require('winston')
-const { logger } = require('xpressjs')
+const { logger: { getLogger, formatters, labelValue } } = require('xpressjs')
 
 const { combine, timestamp, label } = format
 
-module.exports = logger.getLogger({
-  format: combine(timestamp(), logger.context(), logger.output)
+module.exports = getLogger({
+  format: combine(label({label: labelValue}), timestamp(), formatters.context(), formatters.output)
 })
 ```
 
-`logger.output` is responsible to determine logs format described above. If you don't specify it nor replace it by own formatter, logs will contain serialized data.
+`formatters.output` is responsible to determine logs format described above. If you don't specify it nor replace it by own formatter, logs will contain serialized data.
+
+### Unique timestamp
+
+It may happen that many logs are registered in the same time. To distinguish them you can use unique timestamp that differs by at least 1 ms from others. To use it, you have to use `uniqueTimestamp` formatter in your logger configuration:
+
+```javascript
+// /src/config/logger.js
+const { format } = require('winston')
+const { logger: { getLogger, formatters, labelValue } } = require('xpressjs')
+
+const { combine, timestamp, label } = format
+
+module.exports = getLogger({
+  format: combine(label({label: labelValue}), timestamp(), formatters.uniqueTimestamp(), formatters.context(), formatters.output)
+})
+```
+
+If you would like to use a preconfigured logger with unique timestamp, you may just import it from XpressJS:
+
+```javascript
+// /src/config/logger.js
+const { logger } = require('xpressjs')
+
+module.exports = logger.uniqueTimestampLogger
+```
 
 ## Error handling
 
@@ -858,8 +891,10 @@ An example of custom handler is shown below.
 
 ```javascript
 const express = require('express')
-const { validator, logger } = require('xpressjs')
+const { validator } = require('xpressjs')
 const { z } = require('zod')
+
+const logger = require('./config/logger')
 
 const expectedQuery = z.object({
   name: z.string(),
@@ -868,7 +903,7 @@ const expectedQuery = z.object({
 
 const errorHandler = (invalidFields, req, res, next) => {
   const message = `Invalid fields detected in a request: ${invalidFields}`
-  logger.getLogger().error(message)
+  logger.error(message)
   next(next(createError(400, message)))
 }
 
@@ -902,7 +937,9 @@ Example code below shows how to prevent an application to run if not all require
 // import environment variables to the application at start
 require('dotenv').config()
 
-const { env, logger } = require('xpressjs')
+const { env } = require('xpressjs')
+
+const logger = require('./config/logger')
 
 // other parts of main file, including `app` constant initialization
 
@@ -910,12 +947,12 @@ env.validator
   .checkRequiredVars(['JWT_SECRET_TOKEN', 'EXTERNAL_API_TOKEN'])
   .then(() => {
     app.listen(3000, () => {
-      logger.getLogger().info('Server is listening on port 3000')
+      logger.info('Server is listening on port 3000')
     })
   })
   .catch((error) => {
     // log information about not available variables
-    logger.getLogger().error(error.message)
+    logger.error(error.message)
     // exit the application to prevent issues related to lacking variables
     process.exit(1)
   })

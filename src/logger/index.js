@@ -2,11 +2,13 @@ const path = require('path')
 const { createLogger, format, transports } = require('winston')
 
 const { context, output } = require('./Format')
+const { uniqueTimestamp } = require('./UniqueTimestamp')
 const utils = require('./Utils')
 const { useRid, getRid } = require('./RequestId')
 
 // eslint-disable-next-line import/no-dynamic-require
 const packageJson = require(path.join(process.cwd(), 'package.json'))
+const labelValue = packageJson.name
 
 const { combine, timestamp, label } = format
 /**
@@ -20,19 +22,26 @@ function getLogger(options = {}) {
         handleExceptions: true
       })
     ],
-    format: combine(label({ label: packageJson.name }), timestamp(), context(), output),
+    format: combine(label({ label: labelValue }), timestamp(), context(), output),
     ...options
   })
 }
 
 const defaultLogger = getLogger()
 
+const uniqueTimestampLogger = getLogger({
+  format: combine(label({ label: LabelValue }), uniqueTimestamp(), context(), output),
+})
+
 module.exports = {
   getLogger,
   default: defaultLogger,
+  uniqueTimestampLogger,
+  labelValue,
   formatters: {
     context,
-    output
+    output,
+    uniqueTimestamp
   },
   useRid,
   getRid,
