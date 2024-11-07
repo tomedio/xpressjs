@@ -4,7 +4,7 @@
  * @return {any[]}
  */
 function nonEmpty(arr) {
-  return this.filter(item => item !== undefined && item !== null && item !== '');
+  return this.filter((item) => item !== undefined && item !== null && item !== '')
 }
 
-module.exports = nonEmpty;
+module.exports = nonEmpty

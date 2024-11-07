@@ -1,15 +1,15 @@
 module.exports = {
   Healthcheck: {
     get: {
-      summary: "Healthcheck to verify API availability",
-      description: "Healthcheck to verify API availability",
+      summary: 'Healthcheck to verify API availability',
+      description: 'Healthcheck to verify API availability',
       responses: {
         200: {
-          description: "Healthcheck result",
+          description: 'Healthcheck result',
           content: {
-            "application/json": {
+            'application/json': {
               schema: {
-                $ref: "#/components/schemas/Healthcheck"
+                $ref: '#/components/schemas/Healthcheck'
               }
             }
           }

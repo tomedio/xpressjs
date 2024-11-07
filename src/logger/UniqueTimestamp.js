@@ -1,17 +1,17 @@
 const { format } = require('winston')
 
-let lastTimestamp = 0;
+let lastTimestamp = 0
 
 const uniqueTimestamp = format((info) => {
-  const now = Date.now();
+  const now = Date.now()
   if (now <= lastTimestamp) {
-    lastTimestamp++;
+    lastTimestamp++
   } else {
-    lastTimestamp = now;
+    lastTimestamp = now
   }
-  info.timestamp = new Date(lastTimestamp).toISOString();
-  return info;
-});
+  info.timestamp = new Date(lastTimestamp).toISOString()
+  return info
+})
 
 module.exports = {
   uniqueTimestamp

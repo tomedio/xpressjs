@@ -4,7 +4,8 @@ const { createLogger, format, transports } = require('winston')
 const { context, output } = require('./Format')
 const { uniqueTimestamp } = require('./UniqueTimestamp')
 const utils = require('./Utils')
-const { useRid, getRid } = require('./RequestId')
+const { useRid, getRid, setRid } = require('./RequestId')
+const { getContext } = require('./Context')
 
 // eslint-disable-next-line import/no-dynamic-require
 const packageJson = require(path.join(process.cwd(), 'package.json'))
@@ -30,7 +31,7 @@ function getLogger(options = {}) {
 const defaultLogger = getLogger()
 
 const uniqueTimestampLogger = getLogger({
-  format: combine(label({ label: labelValue }), uniqueTimestamp(), context(), output),
+  format: combine(label({ label: labelValue }), uniqueTimestamp(), context(), output)
 })
 
 module.exports = {
@@ -45,5 +46,7 @@ module.exports = {
   },
   useRid,
   getRid,
+  setRid,
+  getContext,
   utils
 }

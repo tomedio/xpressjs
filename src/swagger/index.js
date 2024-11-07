@@ -1,6 +1,6 @@
 const swaggerUi = require('swagger-ui-express')
 const swaggerAutogenLibrary = require('swagger-autogen')
-const fs = require('fs').promises;
+const fs = require('fs').promises
 
 const defaultDefinition = require('./defaultDefinition.js')
 const EndpointsRegistry = require('./EndpointsRegistry.js')
@@ -19,7 +19,7 @@ const paths = {
 
 const swaggerAutogen = swaggerAutogenLibrary({
   openapi: '3.0.0',
-  writeOutputFile: false,
+  writeOutputFile: false
 })
 
 function addInternalEndpoints(swaggerDefinition) {
@@ -92,7 +92,7 @@ async function getSwaggerEndpoint(swaggerDefinition, endpointsFiles, endpointPat
     return (req, res) => {
       const fullResult = addInternalEndpoints(result.data)
       if (req.get('Accept') === 'application/json' || req.query.format === 'json') {
-        res.json(fullResult);
+        res.json(fullResult)
       } else {
         swaggerUi.setup(fullResult)(req, res)
       }

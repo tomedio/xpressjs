@@ -321,6 +321,20 @@ app.get('/', (req, res) => {
 
 `getRid` method must be used inside a middleware or request handler, but only after request id initialization.
 
+#### Set custom request id
+
+If you want to set custom request id without Express server, you can use `setRid(rid)` method.
+
+```javascript
+const {
+  logger: { setRid }
+} = require('xpressjs')
+
+setRid('custom-rid')
+
+// now you can use logger, that will contain 'custom-rid' in logs...
+```
+
 ### Customize formatters
 
 Default logger uses built-in formatters. There are two formatters provided by XpressJS library. If you overwrite `format` in `options` parameter of `getLogger` function, you have to use these formatters explicitly in code if you want them.
@@ -330,12 +344,14 @@ First is context formatter. It adds context data to the logs. If you want to use
 ```javascript
 // /src/config/logger.js
 const { format } = require('winston')
-const { logger: { getLogger, formatters, labelValue } } = require('xpressjs')
+const {
+  logger: { getLogger, formatters, labelValue }
+} = require('xpressjs')
 
 const { combine, timestamp, label } = format
 
 module.exports = getLogger({
-  format: combine(label({label: labelValue}), timestamp(), formatters.context(), formatters.output)
+  format: combine(label({ label: labelValue }), timestamp(), formatters.context(), formatters.output)
 })
 ```
 
@@ -348,12 +364,20 @@ It may happen that many logs are registered in the same time. To distinguish the
 ```javascript
 // /src/config/logger.js
 const { format } = require('winston')
-const { logger: { getLogger, formatters, labelValue } } = require('xpressjs')
+const {
+  logger: { getLogger, formatters, labelValue }
+} = require('xpressjs')
 
 const { combine, timestamp, label } = format
 
 module.exports = getLogger({
-  format: combine(label({label: labelValue}), timestamp(), formatters.uniqueTimestamp(), formatters.context(), formatters.output)
+  format: combine(
+    label({ label: labelValue }),
+    timestamp(),
+    formatters.uniqueTimestamp(),
+    formatters.context(),
+    formatters.output
+  )
 })
 ```
 
@@ -1198,8 +1222,9 @@ Then you can run it with `npm run generate-swagger` to generate `docs/OAS3.json`
 #### Additional endpoints
 
 Some endpoints may be added automatically to Swagger definition. These are:
-* `/healthcheck` - if you use XpressJS health check controller;
-* `/docs` - if you use XpressJS Swagger documentation controller.
+
+- `/healthcheck` - if you use XpressJS health check controller;
+- `/docs` - if you use XpressJS Swagger documentation controller.
 
 Swagger provider used for serving documentation under a specific path, described below, adds these endpoints automatically. However, generator doesn't have such knowledge. That's why you have to specify all endpoints files in the `endpointsFiles` parameter. It's an optional parameter passed to `generate` method. If you don't pass it, these endpoints will not be included in the Swagger file.
 
@@ -1210,8 +1235,9 @@ const {
 } = require('xpressjs')
 const swaggerDefinition = require('./swagger/definition')
 
-generate('docs/OAS3.json', swaggerDefinition, ['./routes.js'], {healthcheck: '/', docs: '/docs'})
-  .then(() => console.log('Swagger file generated'))
+generate('docs/OAS3.json', swaggerDefinition, ['./routes.js'], { healthcheck: '/', docs: '/docs' }).then(() =>
+  console.log('Swagger file generated')
+)
 ```
 
 ### Serve Swagger documentation under a specific path

@@ -1,5 +1,6 @@
 const { format } = require('winston')
 const { getContext } = require('./Context')
+const { getRid } = require('./RequestId')
 const { cleanLog } = require('./Utils')
 
 const context = format((info) => {
@@ -12,9 +13,11 @@ const context = format((info) => {
  */
 const output = format.printf(({ level, message, timestamp, label, context, ...metadata }) => {
   let header = `[${timestamp}][${label}][${level}]`
+  let requestIdentifier = getRid()
   const { requestId, ...restContext } = context ?? {}
-  if (requestId) {
-    header += `[rid:${requestId}]`
+  requestIdentifier = requestId ?? requestIdentifier
+  if (requestIdentifier) {
+    header += `[rid:${requestIdentifier}]`
   }
   let msg = `${header}: ${message}`
   const allMetadata = { ...restContext, ...metadata }
